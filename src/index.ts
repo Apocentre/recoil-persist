@@ -8,7 +8,8 @@ export interface PersistStorage {
 
 export interface PersistConfiguration {
   key?: string
-  storage?: PersistStorage
+  storage?: PersistStorage,
+  ttl?: number
 }
 
 /**
@@ -27,7 +28,7 @@ export const recoilPersist = (
     }
   }
 
-  const { key = 'recoil-persist', storage = localStorage } = config
+  const { key = 'recoil-persist', storage = localStorage , ttl = -1} = config
 
   const persistAtom: AtomEffect<any> = ({ onSet, node, trigger, setSelf }) => {
     if (trigger === 'get') {
@@ -89,7 +90,14 @@ export const recoilPersist = (
       return {}
     }
     try {
-      return JSON.parse(state)
+      const { data, expire} = JSON.parse(state)
+      const now = Date.now()
+
+      if (expire > now) {
+        return data
+      }
+
+      return {}
     } catch (e) {
       console.error(e)
       return {}
@@ -98,10 +106,13 @@ export const recoilPersist = (
 
   const setState = (state: any): void => {
     try {
+      const now = Date.now()
+      const expire = ttl > 0 ? now + ttl : Number.MAX_SAFE_INTEGER
+
       if (typeof storage.mergeItem === 'function') {
-        storage.mergeItem(key, JSON.stringify(state))
+        storage.mergeItem(key, JSON.stringify({data: state, expire}))
       } else {
-        storage.setItem(key, JSON.stringify(state))
+        storage.setItem(key, JSON.stringify({data: state, expire}))
       }
     } catch (e) {
       console.error(e)
