@@ -23,8 +23,7 @@
     "validate": "yarn lint && yarn check-format && yarn test",
     "start": "parcel serve --cache-dir test/demo/.cache -d test/demo/dist test/demo/index.html --open",
     "predeploy": "rm -rf test/demo/dist && parcel build -d test/demo/dist test/demo/index.html --public-url /recoil-persist",
-    "deploy": "gh-pages -d test/demo/dist",
-    "prepare": "install-peers"
+    "deploy": "gh-pages -d test/demo/dist"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
